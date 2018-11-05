@@ -4,9 +4,21 @@ mnist = input_data.read_data_sets("MNIST_data/", one_hot = True)
 
 import tensorflow as tf
 
-print tf.convert_to_tensor(mnist.train.images).get_shape()
+print(tf.convert_to_tensor(mnist.train.images).get_shape())
 
 sess = tf.InteractiveSession()
+
+def variable_summaries(var, name):
+    """Attach a lot of summaries to a Tensor."""
+    with tf.name_scope('summaries'):
+        mean = tf.reduce_mean(var)
+        tf.summary.scalar('mean/' + name, mean)
+        with tf.name_scope('stddev'):
+            stddev = tf.sqrt(tf.reduce_sum(tf.square(var - mean)))
+        tf.summary.scalar('stddev/' + name, stddev)
+        tf.summary.scalar('max/' + name, tf.reduce_max(var))
+        tf.summary.scalar('min/' + name, tf.reduce_min(var))
+        tf.summary.histogram(name, var)
 
 x = tf.placeholder(tf.float32, shape=[None, 784])
 y_ = tf.placeholder(tf.float32, shape=[None, 10])
@@ -14,7 +26,12 @@ y_ = tf.placeholder(tf.float32, shape=[None, 10])
 W = tf.Variable(tf.zeros([784,10]))
 b = tf.Variable(tf.zeros([10]))
 
-sess.run(tf.initialize_all_variables())
+variable_summaries(x, 'x')
+variable_summaries(y_, 'y_')
+variable_summaries(W, 'W')
+variable_summaries(b, 'b')
+
+sess.run(tf.global_variables_initializer())
 
 y = tf.nn.softmax(tf.matmul(x,W) + b)
 
@@ -22,7 +39,7 @@ cross_entropy = tf.reduce_mean(-tf.reduce_sum(y_ * tf.log(y), reduction_indices=
 
 
 train_step = tf.train.GradientDescentOptimizer(0.5).minimize(cross_entropy)
-print "do"
+
 for i in range(1000):
     batch = mnist.train.next_batch(50)
     train_step.run(feed_dict={x:batch[0], y_ : batch[1]})
@@ -31,7 +48,12 @@ correct_prediction = tf.equal(tf.argmax(y,1), tf.argmax(y_, 1))
 
 accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
-print accuracy.eval(feed_dict={x: mnist.test.images, y_: mnist.test.labels})
+print(accuracy.eval(feed_dict={x: mnist.test.images, y_: mnist.test.labels}))
+
+merged = tf.summary.merge_all()
+train_writer = tf.summary.FileWriter('./train', sess.graph)
+test_writer = tf.summary.FileWriter('./test')
+
 
 
 
