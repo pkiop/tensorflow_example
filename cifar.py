@@ -33,8 +33,8 @@ def build_CNN_classifier(x):
   x_image = x
 
   # 첫번째 convolutional layer - 하나의 grayscale 이미지를 32개의 특징들(feature)으로 맵핑(maping)합니다.
-  W_conv1 = tf.Variable(tf.truncated_normal(shape=[5, 5, 3, 32], stddev=5e-2))
-  b_conv1 = tf.Variable(tf.constant(0.1, shape=[32]))
+  W_conv1 = tf.Variable(tf.truncated_normal(shape=[5, 5, 3, 64], stddev=5e-2))
+  b_conv1 = tf.Variable(tf.constant(0.1, shape=[64]))
   h_conv1 = tf.nn.relu(tf.nn.conv2d(x_image, W_conv1, strides=[1, 1, 1, 1], padding='SAME') + b_conv1)
 
   # 첫번째 Pooling layer
@@ -112,7 +112,7 @@ with tf.Session() as sess:
   sess.run(tf.global_variables_initializer())
   
   # 10000 Step만큼 최적화를 수행합니다.
-  for i in range(10000):
+  for i in range(1000):
     batch = next_batch(128, x_train, y_train_one_hot.eval())
 
     # 100 Step마다 training 데이터셋에 대한 정확도와 loss를 출력합니다.
@@ -126,7 +126,7 @@ with tf.Session() as sess:
 
   # 학습이 끝나면 테스트 데이터(10000개)에 대한 정확도를 출력합니다.  
   test_accuracy = 0.0
-  for i in range(10):
+  for i in range(3):
     test_batch = next_batch(1000, x_test, y_test_one_hot.eval())
     test_accuracy = test_accuracy + accuracy.eval(feed_dict={x: test_batch[0], y: test_batch[1], keep_prob: 1.0})
   test_accuracy = test_accuracy / 10;
