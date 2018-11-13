@@ -5,6 +5,7 @@ x_data = [1,2,3]
 y_data = [1,2,3]
 
 W = tf.Variable(tf.random_normal([1]), name = 'weight')
+X = tf.placeholder(tf.float32)
 Y = tf.placeholder(tf.float32)
 
 hypothesis = X * W
