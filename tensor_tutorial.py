@@ -5,6 +5,8 @@ mnist = input_data.read_data_sets("MNIST_data/", one_hot = True)
 import tensorflow as tf
 
 print(tf.convert_to_tensor(mnist.train.images).get_shape())
+<<<<<<< HEAD
+=======
 
 sess = tf.InteractiveSession()
 
@@ -53,6 +55,7 @@ mnist = input_data.read_data_sets("MNIST_data/", one_hot = True)
 
 import tensorflow as tf
 print tf.convert_to_tensor(mnist.train.images).get_shape()
+>>>>>>> c37fe0c2e4ca1aa62dcac54d91415d064b134370
 
 sess = tf.InteractiveSession()
 
@@ -93,9 +96,11 @@ y = tf.nn.softmax(tf.matmul(x,W) + b)
 
 cross_entropy = tf.reduce_mean(-tf.reduce_sum(y_ * tf.log(y), reduction_indices=[1]))
 
-
 train_step = tf.train.GradientDescentOptimizer(0.5).minimize(cross_entropy)
 
+<<<<<<< HEAD
+print("end")
+=======
 for i in range(1000):
     batch = mnist.train.next_batch(50)
     train_step.run(feed_dict={x:batch[0], y_ : batch[1]})
@@ -117,4 +122,5 @@ test_writer = tf.summary.FileWriter('./test')
 
 
 
+>>>>>>> c37fe0c2e4ca1aa62dcac54d91415d064b134370
 
