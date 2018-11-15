@@ -1,36 +1,38 @@
-import tensorflow as tf
-import numpy as np
+import tensorflow as tf 
 
-xy = np.loadtxt('data-03-diabetes.csv', delimiter=',', dtype=np.float32)
-x_data = xy[:,0:-1]
-y_data = xy[:,[-1]]
+#hypothesis = tf.nn.softmax(tf.matmul(X,W) + b)
 
-X = tf.placeholder(tf.float32, shape=[None,8])
-Y = tf.placeholder(tf.float32, shape=[None,1])
-W = tf.Variable(tf.random_normal([8,1]), name = 'weight') #2는 들어가는 것의 갯수, 1 은 나가는 것의 갯수라고 생각하면 된다. 
-b = tf.Variable(tf.random_normal([1]), name = 'bias') # bias는 항상 나가는 값의 개수와 같다. 
+#합을 하고 평균을 낸다. 
+#cost = tf.reduce_mean(-tf.reduce_sum(Y * tf.log(hypothesis), axis = 1))
+#optimizer = tf.train.GradientDescentOptimizer(learning_rate = 0.1).minimize(cost)
 
-# Hypothesis using sigmoid : tf.div(1., 1. + tf.exp(tf.matmul(X,W) + b))
-hypothesis = tf.sigmoid(tf.matmul(X, W) + b) #Hypothesis의 W * T * X 구현 
+x_data = [[1,2,1,1], [2,1,3,2], [3,1,3,4],[4,1,5,5],[1,7,5,5],[1,2,5,6],[1,6,6,6],[1,7,7,7]]
+#2, 2, 2, 1, 1, 1, 0, 0, 0 의미한다. 
+y_data = [[0,0,1],[0,0,1],[0,0,1],[0,1,0],[0,1,0],[0,1,0],[1,0,0],[1,0,0]]
 
-# cost function 수식 그대로 구현 
-cost = -tf.reduce_mean(Y * tf.log(hypothesis) + (1 - Y) * tf.log(1 - hypothesis)) 
+#넣는 것의 y 숫자 => lable의 개수 
+X = tf.placeholder("float", [None, 4])
+Y = tf.placeholder("float", [None, 3])
+nb_classes = 3
 
-# 직접 미분할 필요 없다. 
-train = tf.train.GradientDescentOptimizer(learning_rate = 0.01).minimize(cost)
+W = tf.Variable(tf.random_normal([4,nb_classes]), name = 'weight')
+b = tf.Variable(tf.random_normal([nb_classes]),name='bias')
 
-# 값 예상은 0.5 기준으로 
-predicted = tf.cast(hypothesis > 0.5, dtype=tf.float32)
-accuracy = tf.reduce_mean(tf.cast(tf.equal(predicted, Y), dtype=tf.float32))
+hypothesis = tf.nn.softmax(tf.matmul(X, W) + b)
 
-with tf.Session() as sess: 
+cost = tf.reduce_mean(-tf.reduce_sum(Y * tf.log(hypothesis), axis = 1))
+optimizer = tf.train.GradientDescentOptimizer(learning_rate=0.1).minimize(cost)
+
+
+with tf.Session() as sess:
         sess.run(tf.global_variables_initializer())
 
-        for step in range(10001):
-                cost_val, _ = sess.run([cost, train], feed_dict = {X: x_data, Y:y_data})
+        for step in range(2001):
+                sess.run(optimizer, feed_dict = {X:x_data, Y : y_data})
                 if step % 200 == 0:
-                        print(step, cost_val)
+                        print(step, sess.run(cost, feed_dict = {X:x_data, Y:y_data}))
 
-        h, c, a = sess.run([hypothesis, predicted, accuracy], feed_dict = {X:x_data, Y:y_data})
-
-        print("\nHypothesis: ", h, "\nCorrect (Y) ", c, "\nAccuracy: ", a)
+        #Testing & One-hot encoding
+        print("test")
+        a = sess.run(hypothesis, feed_dict={X:[[1,11,7,9]]})
+        print(a, sess.run(tf.argmax(a,1)))
