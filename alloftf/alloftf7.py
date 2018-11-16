@@ -35,4 +35,8 @@ with tf.Session() as sess:
         #Testing & One-hot encoding
         print("test")
         a = sess.run(hypothesis, feed_dict={X:[[1,11,7,9]]})
+        #argmax
+        #[2.5533700e-01 7.4465555e-01 7.4568266e-06] 이런 list에서 몇번째에 있는게 가장 큰지 궁금할때 
         print(a, sess.run(tf.argmax(a,1)))
+        all = sess.run(hypothesis, feed_dict={X:[[1,11,7,9], [1,3,4,3], [1,1,0,1]]})
+        print(all, sess.run(tf.argmax(all,1)))
