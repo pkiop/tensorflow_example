@@ -95,3 +95,38 @@ print(tf.stack([x,y,z], axis = 1).eval(session = sess))
 [[1 2 3]
  [4 5 6]]
 """
+
+x = [[0,1,2], [2,1,0]]
+
+print(tf.ones_like(x).eval(session = sess))
+"""
+[[1 1 1]
+ [1 1 1]]
+"""
+print(tf.zeros_like(x).eval(session = sess))
+"""
+[[0 0 0]
+ [0 0 0]]
+"""
+
+print("Zip")
+
+for x,y in zip([1, 2, 3], [4, 5, 6]):
+    print(x, y)
+"""
+1 4
+2 5
+3 6
+"""
+for x, y, z in zip([1, 2, 3], [4, 5, 6], [7, 8, 9]):
+    print(x, y, z)
+"""
+1 4 7
+2 5 8
+3 6 9
+"""
+
+
+
+
+
