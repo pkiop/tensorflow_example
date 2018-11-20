@@ -1,0 +1,2 @@
+model_checkpoint_path: "B4_conv"
+all_model_checkpoint_paths: "B4_conv"

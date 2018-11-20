@@ -16,7 +16,6 @@ def next_batch(num, data, labels):
 
   return np.asarray(data_shuffle), np.asarray(labels_shuffle)
 
-
 # 인풋 아웃풋 데이터, 드롭아웃 확률을 입력받기위한 플레이스홀더를 정의합니다.
 x = tf.placeholder(tf.float32, shape=[None, 32, 32, 3])
 y = tf.placeholder(tf.float32, shape=[None, 10])
@@ -26,22 +25,22 @@ X_img = x
 conv1 = tf.layers.conv2d(inputs=X_img, filters=32, kernel_size=[3, 3], padding="SAME", activation=tf.nn.relu)
 # Pooling Layer #1
 pool1 = tf.layers.max_pooling2d(inputs=conv1, pool_size=[2, 2], padding="SAME", strides=2)
-dropout1 = tf.layers.dropout(inputs=pool1,rate=0.3)
+dropout1 = tf.layers.dropout(inputs=pool1,rate=keep_prob)
 
 # Convolutional Layer #2 and Pooling Layer #2
 conv2 = tf.layers.conv2d(inputs=dropout1, filters=64, kernel_size=[3, 3], padding="SAME", activation=tf.nn.relu)
 pool2 = tf.layers.max_pooling2d(inputs=conv2, pool_size=[2, 2], padding="SAME", strides=2)
-dropout2 = tf.layers.dropout(inputs=pool2, rate=0.3)
+dropout2 = tf.layers.dropout(inputs=pool2, rate=keep_prob)
 
-# Convolutional Layer #2 and Pooling Layer #2
+# Convolutional Layer #2 and Pooling Layer #3
 conv3 = tf.layers.conv2d(inputs=dropout2, filters=128, kernel_size=[3, 3], padding="same", activation=tf.nn.relu)
-pool3 = tf.layers.max_pooling2d(inputs=conv3, pool_size=[2, 2], padding="same", strides=2)
-dropout3 = tf.layers.dropout(inputs=pool3, rate=0.3)
+pool3 = tf.layers.max_pooling2d(inputs=conv3, pool_size=[2, 2], padding="same", strides=1)
+dropout3 = tf.layers.dropout(inputs=pool3, rate=keep_prob)
 
 # Dense Layer with Relu
-flat = tf.reshape(dropout3, [-1, 128 * 4 * 4])
+flat = tf.reshape(dropout3, [-1,128*4*4])
 dense4 = tf.layers.dense(inputs=flat, units=625, activation=tf.nn.relu)
-dropout4 = tf.layers.dropout(inputs=dense4, rate=0.5)
+dropout4 = tf.layers.dropout(inputs=dense4, rate=keep_prob)
 
 # Logits (no activation) Layer: L5 Final FC 625 inputs -> 10 outputs
 logits = tf.layers.dense(inputs=dropout4, units=10)
@@ -54,22 +53,25 @@ y_test_one_hot = tf.squeeze(tf.one_hot(y_test, 10),axis=1)
 
 # Cross Entropy를 비용함수(loss function)으로 정의하고, RMSPropOptimizer를 이용해서 비용 함수를 최소화합니다.
 loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=y, logits=logits))
-train_step = tf.train.RMSPropOptimizer(1e-3).minimize(loss)
+train_step = tf.train.AdamOptimizer(1e-3).minimize(loss)
 
 # 정확도를 계산하는 연산을 추가합니다.
 correct_prediction = tf.equal(tf.argmax(logits, 1), tf.argmax(y, 1))
 accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
-kpp = 0.7
-print("p : %f" %kpp)
+kpp = 0.5
+
+#모델 저장
+saver = tf.train.Saver()
+
 # 세션을 열어 실제 학습을 진행합니다.
 with tf.Session() as sess:
   # 모든 변수들을 초기화한다. 
   sess.run(tf.global_variables_initializer())
   
   # 10000 Step만큼 최적화를 수행합니다.
-  for i in range(20000):
-    batch = next_batch(128, x_train, y_train_one_hot.eval())
+  for i in range(2000):
+    batch = next_batch(100, x_train, y_train_one_hot.eval())
 
     # 100 Step마다 training 데이터셋에 대한 정확도와 loss를 출력합니다.
     if i % 100 == 0:
@@ -78,11 +80,11 @@ with tf.Session() as sess:
 
       print("반복(Epoch): %d, 트레이닝 데이터 정확도: %f, 손실 함수(loss): %f" % (i, train_accuracy, loss_print))
     sess.run(train_step, feed_dict={x: batch[0], y: batch[1], keep_prob: kpp})
-
   # 학습이 끝나면 테스트 데이터(10000개)에 대한 정확도를 출력합니다.  
   test_accuracy = 0.0
-  for i in range(3):
-    test_batch = next_batch(1000, x_test, y_test_one_hot.eval())
+  for i in range(10):
+    test_batch = next_batch(500, x_test, y_test_one_hot.eval())
     test_accuracy = test_accuracy + accuracy.eval(feed_dict={x: test_batch[0], y: test_batch[1], keep_prob: 1.0})
   test_accuracy = test_accuracy / 10;
   print("테스트 데이터 정확도: %f" % test_accuracy)
+  
