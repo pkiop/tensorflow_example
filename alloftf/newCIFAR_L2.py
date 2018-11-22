@@ -1,5 +1,6 @@
 import tensorflow as tf
 import numpy as np
+from tensorflow.keras import regularizers
 
 # CIFAR-10 데이터를 다운로드 받기 위한 keras의 helper 함수인 load_data 함수를 임포트합니다.
 from tensorflow.keras.datasets.cifar10 import load_data
@@ -21,37 +22,38 @@ x = tf.placeholder(tf.float32, shape=[None, 32, 32, 3])
 y = tf.placeholder(tf.float32, shape=[None, 10])
 keep_prob = tf.placeholder(tf.float32)
 X_img = x
+weight_decay = 1e-4
+
 # Convolutional Layer #1
-conv1 = tf.layers.conv2d(inputs=X_img, filters=32, kernel_size=[3, 3], padding="SAME", activation=tf.nn.relu)
+conv1 = tf.layers.conv2d(inputs=X_img, filters=32, kernel_size=[3, 3], padding="SAME", activation=tf.nn.elu, kernel_initializer = tf.contrib.layers.xavier_initializer(), kernel_regularizer=regularizers.l2(weight_decay))
 # Pooling Layer #1
 pool1 = tf.layers.max_pooling2d(inputs=conv1, pool_size=[2, 2], padding="SAME", strides=2)
-dropout1 = tf.layers.dropout(inputs=pool1,rate=keep_prob)
+dropout1 = tf.layers.dropout(inputs=pool1,rate=0.2)
 
 # Convolutional Layer #2 and Pooling Layer #2
-conv2 = tf.layers.conv2d(inputs=dropout1, filters=64, kernel_size=[3, 3], padding="SAME", activation=tf.nn.relu)
+conv2 = tf.layers.conv2d(inputs=dropout1, filters=64, kernel_size=[3, 3], padding="SAME", activation=tf.nn.elu,  kernel_initializer = tf.contrib.layers.xavier_initializer(), kernel_regularizer=regularizers.l2(weight_decay))
 pool2 = tf.layers.max_pooling2d(inputs=conv2, pool_size=[2, 2], padding="SAME", strides=2)
-dropout2 = tf.layers.dropout(inputs=pool2, rate=keep_prob)
+dropout2 = tf.layers.dropout(inputs=pool2, rate=0.2)
 
-# Convolutional Layer #2 and Pooling Layer #2
-conv3 = tf.layers.conv2d(inputs=dropout2, filters=128, kernel_size=[3, 3], padding="same", activation=tf.nn.relu)
-pool3 = tf.layers.max_pooling2d(inputs=conv3, pool_sze=[2, 2], padding="same", strides=2)
-dropout3 = tf.layers.dropout(inputs=pool3, rate=keep_prob)
+# Convolutional Layer #3 and Pooling Layer #3
+conv3 = tf.layers.conv2d(inputs=dropout2, filters=128, kernel_size=[3, 3], padding="same", activation=tf.nn.elu,  kernel_initializer = tf.contrib.layers.xavier_initializer(), kernel_regularizer=regularizers.l2(weight_decay))
+pool3 = tf.layers.max_pooling2d(inputs=conv3, pool_size=[2, 2], padding="same", strides=2)
+dropout3 = tf.layers.dropout(inputs=pool3, rate=0.2)
 
 # Convolutional Layer #4 and Pooling Layer #4
-conv4 = tf.layers.conv2d(inputs=dropout3, filters=256, kernel_size=[3, 3], padding="same", activation=tf.nn.relu)
+conv4 = tf.layers.conv2d(inputs=dropout3, filters=256, kernel_size=[3, 3], padding="same", activation=tf.nn.elu,  kernel_initializer = tf.contrib.layers.xavier_initializer(), kernel_regularizer=regularizers.l2(weight_decay))
 pool4 = tf.layers.max_pooling2d(inputs=conv4, pool_size=[2, 2], padding="same", strides=2)
-dropout4 = tf.layers.dropout(inputs=pool4, rate=keep_prob)
+dropout4 = tf.layers.dropout(inputs=pool4, rate=0.2)
 
-# Convolutional Layer #4 and Pooling Layer #4
-conv5 = tf.layers.conv2d(inputs=dropout4, filters=512, kernel_size=[3, 3], padding="same", activation=tf.nn.relu)
+# Convolutional Layer #5 and Pooling Layer #5
+conv5 = tf.layers.conv2d(inputs=dropout4, filters=512, kernel_size=[3, 3], padding="same", activation=tf.nn.elu,  kernel_initializer = tf.contrib.layers.xavier_initializer(), kernel_regularizer=regularizers.l2(weight_decay))
 pool5 = tf.layers.max_pooling2d(inputs=conv5, pool_size=[2, 2], padding="same", strides=2)
-dropout5 = tf.layers.dropout(inputs=pool5, rate=keep_prob)
+dropout5 = tf.layers.dropout(inputs=pool5, rate=0.2)
 
 # Dense Layer with Relu
 flat = tf.reshape(dropout5, [-1, 128 * 4])
 dense6 = tf.layers.dense(inputs=flat, units=625, activation=tf.nn.relu)
-dropout6 = tf.layers.dropout(inputs=dense6, rate=keep_prob)
-
+dropout6 = tf.layers.dropout(inputs=dense6, rate=0.5)
 
 # Logits (no activation) Layer: L5 Final FC 625 inputs -> 10 outputs
 logits = tf.layers.dense(inputs=dropout6, units=10)
@@ -82,7 +84,7 @@ with tf.Session() as sess:
   sess.run(tf.global_variables_initializer())
   
   # 10000 Step만큼 최적화를 수행합니다.
-  for i in range(2000):
+  for i in range(10000):
     batch = next_batch(128, x_train, y_train_one_hot.eval())
 
     # 100 Step마다 training 데이터셋에 대한 정확도와 loss를 출력합니다.
